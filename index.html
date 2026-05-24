@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🛒 Mercadinho do João - Sistema Visual com Exclusão</title>
+    <title>🛒 Mercadinho do João - Sistema Visual com Edição e Exclusão</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
         <div class="header">
             <h1>🛒 Mercadinho do João</h1>
-            <p>Sistema de Gerenciamento de Estoque e Vendas - Agora com Exclusão de Produtos!</p>
+            <p>Sistema de Gerenciamento de Estoque e Vendas - Agora com Edição e Exclusão de Produtos!</p>
         </div>
 
         <div class="grid">
@@ -84,6 +84,29 @@
             <div class="modal-buttons">
                 <button onclick="confirmarExclusao()" class="danger" style="flex:1">Sim, excluir</button>
                 <button onclick="fecharModal()" style="flex:1; background:#718096">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de edição de produto -->
+    <div id="modalEdicao" class="modal">
+        <div class="modal-content">
+            <h3>✏️ Editar Produto</h3>
+            <div class="form-group">
+                <label>Nome do produto:</label>
+                <input type="text" id="editProdNome">
+            </div>
+            <div class="form-group">
+                <label>Preço (R$):</label>
+                <input type="number" id="editProdPreco" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Quantidade em estoque:</label>
+                <input type="number" id="editProdQtd">
+            </div>
+            <div class="modal-buttons">
+                <button onclick="salvarEdicao()" class="success" style="flex:1">💾 Salvar alterações</button>
+                <button onclick="fecharModalEdicao()" style="flex:1; background:#718096">Cancelar</button>
             </div>
         </div>
     </div>
