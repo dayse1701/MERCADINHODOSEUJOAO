@@ -3,6 +3,7 @@ let produtos = [];
 let vendas = [];
 let mensagemTimeout = null;
 let produtoParaExcluir = null; // Armazena o índice do produto a ser excluído
+let produtoParaEditar = null; // Armazena o índice do produto a ser editado
 
 // Função para atualizar o select de produtos
 function atualizarSelectProdutos() {
@@ -69,6 +70,91 @@ function cadastrarProduto() {
     mostrarMensagem(`✅ Produto "${nome}" cadastrado com sucesso!`, 'success');
 }
 
+// ==================== FUNÇÕES DE EDIÇÃO ====================
+
+// Função para abrir modal de edição
+function abrirModalEdicao(indice) {
+    const produto = produtos[indice];
+    if (!produto) return;
+    
+    produtoParaEditar = indice;
+    
+    // Preencher o formulário com os dados atuais
+    document.getElementById('editProdNome').value = produto.nome;
+    document.getElementById('editProdPreco').value = produto.preco;
+    document.getElementById('editProdQtd').value = produto.estoque;
+    
+    // Mostrar o modal
+    document.getElementById('modalEdicao').style.display = 'block';
+}
+
+// Função para fechar modal de edição
+function fecharModalEdicao() {
+    document.getElementById('modalEdicao').style.display = 'none';
+    produtoParaEditar = null;
+}
+
+// Função para salvar a edição
+function salvarEdicao() {
+    if (produtoParaEditar === null) return;
+    
+    const nome = document.getElementById('editProdNome').value.trim();
+    const preco = parseFloat(document.getElementById('editProdPreco').value);
+    const estoque = parseInt(document.getElementById('editProdQtd').value);
+    
+    // Validações
+    if (!nome) {
+        mostrarMensagem('❌ Por favor, informe o nome do produto!', 'error');
+        return;
+    }
+    if (isNaN(preco) || preco <= 0) {
+        mostrarMensagem('❌ Por favor, informe um preço válido!', 'error');
+        return;
+    }
+    if (isNaN(estoque) || estoque < 0) {
+        mostrarMensagem('❌ Por favor, informe uma quantidade válida!', 'error');
+        return;
+    }
+    
+    // Verificar se o novo nome já existe em outro produto
+    const produtoExistente = produtos.find((p, index) => 
+        p.nome.toLowerCase() === nome.toLowerCase() && index !== produtoParaEditar
+    );
+    
+    if (produtoExistente) {
+        mostrarMensagem('❌ Já existe outro produto com este nome!', 'error');
+        return;
+    }
+    
+    // Salvar o nome antigo para mensagem
+    const nomeAntigo = produtos[produtoParaEditar].nome;
+    
+    // Atualizar o produto
+    produtos[produtoParaEditar] = {
+        nome: nome,
+        preco: preco,
+        estoque: estoque
+    };
+    
+    // Atualizar as vendas que tinham o nome antigo
+    vendas.forEach(venda => {
+        if (venda.produto === nomeAntigo) {
+            venda.produto = nome;
+        }
+    });
+    
+    // Atualizar as listas
+    atualizarListaProdutos();
+    atualizarListaVendas();
+    atualizarSelectProdutos();
+    
+    // Fechar modal e mostrar mensagem
+    fecharModalEdicao();
+    mostrarMensagem(`✏️ Produto "${nomeAntigo}" foi atualizado para "${nome}" com sucesso!`, 'success');
+}
+
+// ==================== FUNÇÕES DE EXCLUSÃO ====================
+
 // Função para abrir modal de exclusão
 function abrirModalExclusao(indice, nomeProduto) {
     produtoParaExcluir = indice;
@@ -76,7 +162,7 @@ function abrirModalExclusao(indice, nomeProduto) {
     document.getElementById('modalExclusao').style.display = 'block';
 }
 
-// Função para fechar modal
+// Função para fechar modal de exclusão
 function fecharModal() {
     document.getElementById('modalExclusao').style.display = 'none';
     produtoParaExcluir = null;
@@ -111,6 +197,8 @@ function confirmarExclusao() {
     }
     fecharModal();
 }
+
+// ==================== FUNÇÕES DE VENDAS ====================
 
 // Função para registrar venda
 function registrarVenda() {
@@ -158,7 +246,9 @@ function registrarVenda() {
     mostrarMensagem(`✅ Venda registrada! Total: R$ ${valorTotal.toFixed(2)}`, 'success');
 }
 
-// Função para atualizar lista de produtos (agora com botões de excluir e editar)
+// ==================== FUNÇÕES DE ATUALIZAÇÃO DE LISTAS ====================
+
+// Função para atualizar lista de produtos (com botões de editar e excluir)
 function atualizarListaProdutos() {
     const container = document.getElementById('listaProdutos');
     
@@ -181,6 +271,7 @@ function atualizarListaProdutos() {
                 ${produto.estoque < 5 ? '<br>⚠️ <small>Estoque baixo!</small>' : ''}
             </div>
             <div class="produto-actions">
+                <button class="btn-editar" onclick="abrirModalEdicao(${index})">✏️ Editar</button>
                 <button class="btn-excluir" onclick="abrirModalExclusao(${index}, '${produto.nome.replace(/'/g, "\\'")}')">🗑️ Excluir</button>
             </div>
         `;
@@ -231,11 +322,16 @@ function limparTudo() {
     }
 }
 
-// Fechar modal ao clicar fora
+// Fechar modais ao clicar fora
 window.onclick = function(event) {
-    const modal = document.getElementById('modalExclusao');
-    if (event.target === modal) {
+    const modalExclusao = document.getElementById('modalExclusao');
+    const modalEdicao = document.getElementById('modalEdicao');
+    
+    if (event.target === modalExclusao) {
         fecharModal();
+    }
+    if (event.target === modalEdicao) {
+        fecharModalEdicao();
     }
 }
 
